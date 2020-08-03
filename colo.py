@@ -85,7 +85,7 @@ class ColorizeNet(nn.Module):
         out=nn.ReLU(self.conv1(x))
 
         out=nn.functional.interpolate(out,scale_factor=2)
-        out=nn.ReLU(self.con2(out))
+        out=nn.ReLU(self.conv2(out))
         out=nn.ReLU(self.conv3(out))
 
         out=nn.functional.interpolate(out,scale_factor=2)
@@ -97,18 +97,27 @@ class ColorizeNet(nn.Module):
 
 
 class Net(nn.Module):
-    def __init__(self,num_class):
+    def __init__(self,num_classes):
         super(Net,self).__init__()
 
         self.lowLevel=LowLevelNet()
         self.midLevel=MidLevelNet()
         self.globalLevel=GlobalNet()
 
-        #融合后
-        self.fuse=nn.Conv2d(512,256,1,1,0)#
+        #融合
 
-        self.classNet=ClassNet(num_class)
+        self.classNet=ClassNet(num_classes)
         self.colorize=ColorizeNet()
+
+    def fusionLayer(self, midOut, globalOut):
+        #midOut (batchsize,256,h,w)
+        #globalOut (batchsize,256,1,1)
+        tmp = torch.repeat_interleave(globalOut, repeats=midOut.shape[2], dim=2 )
+        tmp = torch.repeat_interleave(tmp, repeats=midOut.shape[3], dim=3)
+        fuseOut = torch.cat([tmp, midOut], dim=1)
+
+        return nn.Sigmoid(fuseOut)
+
 
     def forward(self,x):
         lowNetOut=self.lowLevel(x)
@@ -119,6 +128,10 @@ class Net(nn.Module):
         classOut=self.classNet(classIn)
 
         #下面是融合层 之后进入着色层，输出out
+        fuseOut=self.fusionLayer(midNetOut, fusionIn)
 
+        out=self.colorize(fuseOut)
+
+        return out
 
 
