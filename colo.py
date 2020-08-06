@@ -15,12 +15,12 @@ class LowLevelNet(nn.Module):
         self.conv6=nn.Conv2d(256,512,3,1,1)
 
     def forward(self,x):
-        out = nn.ReLU(self.conv1(x))
-        out = nn.ReLU(self.conv2(out))
-        out = nn.ReLU(self.conv3(out))
-        out = nn.ReLU(self.conv4(out))
-        out = nn.ReLU(self.conv5(out))
-        out = nn.ReLU(self.conv6(out))
+        out = nn.ReLU()(self.conv1(x))
+        out = nn.ReLU()(self.conv2(out))
+        out = nn.ReLU()(self.conv3(out))
+        out = nn.ReLU()(self.conv4(out))
+        out = nn.ReLU()(self.conv5(out))
+        out = nn.ReLU()(self.conv6(out))
         return out
 
 class MidLevelNet(nn.Module):
@@ -30,8 +30,8 @@ class MidLevelNet(nn.Module):
         self.conv2=nn.Conv2d(512,256,3,1,1)
 
     def forward(self,x):
-        out = nn.ReLU(self.conv1(x))
-        out = nn.ReLU(self.conv2(out))
+        out = nn.ReLU()(self.conv1(x))
+        out = nn.ReLU()(self.conv2(out))
         return out
 
 class GlobalNet(nn.Module):
@@ -46,17 +46,17 @@ class GlobalNet(nn.Module):
         self.fc3=nn.Linear(512,256),
 
     def forward(self,x):
-        out = nn.ReLU(self.conv1(x))
-        out = nn.ReLU(self.conv2(out))
-        out = nn.ReLU(self.conv3(out))
-        out = nn.ReLU(self.conv4(out))
-        out = out.view(-1,7*7*512)  #如果按照论文的数据集7*7*
-        out = nn.ReLU(self.fc1(out))
-        out = nn.ReLU(self.fc2(out))
+        out = nn.ReLU()(self.conv1(x))
+        out = nn.ReLU()(self.conv2(out))
+        out = nn.ReLU()(self.conv3(out))
+        out = nn.ReLU()(self.conv4(out))
+        out = out.view(-1, 7 * 7 * 512)  # 如果按照论文的数据集7*7*
+        out = nn.ReLU()(self.fc1(out))
+        out = nn.ReLU()(self.fc2(out))
 
         classIn = out
 
-        out = nn.ReLU(self.fc3(out))
+        out = nn.ReLU()(self.fc3(out))
         fusionIn = out
         return fusionIn,classIn
 
@@ -67,7 +67,7 @@ class ClassNet(nn.Module):
         self.fc2=nn.Linear(256,numClasses)
 
     def forward(self,x):
-        out=nn.ReLU(self.fc1(x))
+        out = nn.ReLU()(self.fc1(x))
         out=self.fc2(out)
         return out
 
@@ -82,15 +82,15 @@ class ColorizeNet(nn.Module):
         self.conv5=nn.Conv2d(32,2,3,1,1)
 
     def forward(self,x):
-        out=nn.ReLU(self.conv1(x))
+        out = nn.ReLU()(self.conv1(x))
 
         out=nn.functional.interpolate(out,scale_factor=2)
-        out=nn.ReLU(self.conv2(out))
-        out=nn.ReLU(self.conv3(out))
+        out = nn.ReLU()(self.conv2(out))
+        out = nn.ReLU()(self.conv3(out))
 
         out=nn.functional.interpolate(out,scale_factor=2)
-        out=nn.ReLU(self.conv4(out))
-        out=nn.Sigmoid(self.conv5(out))
+        out = nn.ReLU()(self.conv4(out))
+        out = nn.Sigmoid()(self.conv5(out))
 
         out=nn.functional.interpolate(out,scale_factor=2)   #a*b
         return out
