@@ -92,7 +92,7 @@ class ColorizeNet(nn.Module):
         out = nn.ReLU()(self.conv4(out))
         out = nn.Sigmoid()(self.conv5(out))
 
-        out=nn.functional.interpolate(out,scale_factor=2)   #a*b
+        out=nn.functional.interpolate(out,scale_factor=2)   #L*a*b
         return out
 
 
@@ -132,6 +132,6 @@ class Net(nn.Module):
 
         out=self.colorize(fuseOut)
 
-        return out
+        return out, classOut
 
 
