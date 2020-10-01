@@ -49,17 +49,19 @@ for epoch in range(EPOCH):
     epoch_color_loss = 0.
     for batch_idx, (imgs, labels) in enumerate(tqdm(trainLoader, ncols=50)):
 
+
         if GPU is True:
             batch_imgs = imgs.cuda(0).float()
-            batch_labels = labels.cuda().float()
+            batch_labels = labels.cuda().long()
         else:
             batch_imgs = imgs.float()
-            batch_labels = labels.float()
+            batch_labels = labels.long()
 
-        pre_imgs, pre_labels = model(batch_imgs[:, :, :, 0])
+        inBatch_imgs = batch_imgs[:, 0, :, :].unsqueeze(1)
+        pre_imgs, pre_labels = model(inBatch_imgs)
 
         pre_imgs = torch.reshape(pre_imgs, (len(batch_imgs), -1))
-        batch_imgs = torch.reshape(batch_imgs, (len(batch_imgs), -1))
+        batch_imgs = torch.reshape(batch_imgs[:, 1:, :, :], (len(batch_imgs), -1))
         cls_loss = CLASSIFY_loss(pre_labels, batch_labels)
         color_loss = COLOR_loss(pre_imgs, batch_imgs)
 
@@ -72,7 +74,7 @@ for epoch in range(EPOCH):
         epoch_color_loss += color_loss.item()
 
         _, pred = pre_labels.max(1)
-        print(pred)###########################
+        #print(pred)###########################
         num_correct = (pred.long() == batch_labels.long()).sum().item()
         acc = num_correct / len(batch_labels)
         train_eval = acc
@@ -96,7 +98,7 @@ for epoch in range(EPOCH):
             batch_imgs = imgs.float()
             batch_labels = labels.long()
 
-        pre_imgs, pre_labels = model(batch_imgs[:, :, :, 0])
+        pre_imgs, pre_labels = model(batch_imgs)
 
         pre_imgs = torch.reshape(pre_imgs, (len(batch_imgs), -1))
         batch_imgs = torch.reshape(batch_imgs, (len(batch_imgs), -1))

@@ -38,12 +38,12 @@ class GlobalNet(nn.Module):
     def __init__(self):
         super(GlobalNet, self).__init__()
         self.conv1=nn.Conv2d(512,512,3,2,1)
-        self.conv2=nn.Conv2d(512,512,3,1,1),
-        self.conv3=nn.Conv2d(512,512,3,2,1),
-        self.conv4=nn.Conv2d(512,512,3,1,1),
-        self.fc1=nn.Linear(7*7*512,1024),#如果按照论文的数据集7*7*
-        self.fc2=nn.Linear(1024,512),
-        self.fc3=nn.Linear(512,256),
+        self.conv2=nn.Conv2d(512,512,3,1,1)
+        self.conv3=nn.Conv2d(512,512,3,2,1)
+        self.conv4=nn.Conv2d(512,512,3,1,1)
+        self.fc1=nn.Linear(7*7*512,1024)#如果按照论文的数据集7*7*
+        self.fc2=nn.Linear(1024,512)
+        self.fc3=nn.Linear(512,256)
 
     def forward(self,x):
         out = nn.ReLU()(self.conv1(x))
@@ -75,7 +75,7 @@ class ClassNet(nn.Module):
 class ColorizeNet(nn.Module):
     def __init__(self):
         super(ColorizeNet, self).__init__()
-        self.conv1=nn.Conv2d(256,128,3,1,1)
+        self.conv1=nn.Conv2d(512,128,3,1,1)
         self.conv2=nn.Conv2d(128,64,3,1,1)
         self.conv3=nn.Conv2d(64,64,3,1,1)
         self.conv4=nn.Conv2d(64,32,3,1,1)
@@ -112,11 +112,16 @@ class Net(nn.Module):
     def fusionLayer(self, midOut, globalOut):
         #midOut (batchsize,256,h,w)
         #globalOut (batchsize,256,1,1)
-        tmp = torch.repeat_interleave(globalOut, repeats=midOut.shape[2], dim=2 )
+
+        batch_size, num = globalOut.shape
+        globalOut = globalOut.reshape((batch_size, num, 1, 1))
+        tmp = torch.repeat_interleave(globalOut, repeats=midOut.shape[2], dim=2)
         tmp = torch.repeat_interleave(tmp, repeats=midOut.shape[3], dim=3)
         fuseOut = torch.cat([tmp, midOut], dim=1)
 
-        return nn.Sigmoid(fuseOut)
+
+
+        return nn.Sigmoid()(fuseOut)
 
 
     def forward(self,x):
